@@ -1,2 +1,212 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+import turtle,random,asyncio
+screen = turtle.Screen()
+screen.setup(1000 ,1000)
+#set variables
+
+def Game():
+    global A,B,C,turn,friction,speed,score,Font
+    A = 0
+    B = 0
+    C = 0
+    turn = 0
+    friction = 0.02
+    speed = 0
+    score = -1
+    Font = ("Helvetica Narrow", 20, "bold")
+    
+    player = turtle.Turtle()
+    player.penup()
+    player.shapesize(1.75)
+    player.speed(0)
+
+    #point location
+    a = random.randint(-350,350)
+    b = random.randint(-350,350)
+
+    #point sprite
+    point = turtle.Turtle()
+    point.penup()
+    point.shape('circle')
+    point.shapesize(1.75)
+    point.speed(0)
+
+
+    #score board display
+    score_board1 = turtle.Turtle()
+    score_board1.penup()
+    score_board1.hideturtle()
+    score_board1.speed(0)
+    score_board1.goto(-350,370)
+
+    #score board title
+    score_board2 = turtle.Turtle()
+    score_board2.penup()
+    score_board2.hideturtle()
+    score_board2.speed(0)
+    score_board2.goto(-450,370)
+
+    #border
+    border = turtle.Turtle()
+    border.hideturtle()
+    border.pensize(20)
+    border.speed(0)
+    border.penup()
+    border.goto(-355,355)
+    border.pendown()
+
+
+    #enemys
+    enemy_1 = turtle.Turtle()
+    enemy_1.penup()
+    enemy_1.color('red')
+    enemy_1.shapesize(1)
+    enemy_1.speed(0)
+    enemy_1.shape('square')
+    enemy_1.goto(-350,350)
+
+    enemy_2 = turtle.Turtle()
+    enemy_2.penup()
+    enemy_2.color('blue')
+    enemy_2.shapesize(1)
+    enemy_2.speed(0)
+    enemy_2.shape('square')
+    enemy_2.goto(350,350)
+
+    for x in range (4):
+        border.forward(710)
+        border.right(90)
+    #play
+    player.showturtle()
+    enemy_1.showturtle()
+    enemy_2.showturtle()
+    point.showturtle()
+    score_board2.write('Score:',font=Font)
+
+    #enemy movement
+    def enemy_movement(enemy,D):
+        global C
+        enemy.setheading(enemy.towards(player))
+        enemy.forward(D)
+        if player.xcor() <= enemy.xcor()+12 and player.xcor() >= enemy.xcor()-12 and  player.ycor() <= enemy.ycor()+12 and player.ycor() >= enemy.ycor()-12:
+            C=1
+            player.hideturtle()
+            enemy_1.hideturtle()
+            enemy_2.hideturtle()
+            border.clear()
+            point.hideturtle()
+            score_board1.clear()
+            score_board2.clear()
+            menu()
+
+
+    #player movement
+    def right():
+        global turn
+        if turn < 0:
+            turn += 5
+        turn += 0.8
+
+    def left():
+        global turn
+        if turn > 0:
+            turn -= 5
+        turn -= 0.8
+
+    def forward():
+        global speed
+        speed += 0.8
+
+    def backward():
+        global speed
+        speed -= 0.8
+
+
+
+    screen.onkeypress(forward, 'Up')
+    screen.onkeypress(backward, 'Down')
+    screen.onkeypress(right, 'Right')
+    screen.onkeypress(left, 'Left')
+    screen.listen()
+
+    async def main():
+        global speed
+        global turn
+        global score
+        player.forward(speed)
+        player.right(turn)
+        enemy_movement(enemy_1,2*(score/5))
+        enemy_movement(enemy_2,3*(score/5))
+        if player.xcor() <= point.xcor()+20 and player.xcor() >= point.xcor()-20 and  player.ycor() <= point.ycor()+20 and player.ycor() >= point.ycor()-20:
+            score_board1.clear()
+            point.goto(random.randint(-350,350),random.randint(-350,350))
+            score += 1
+            score_board1.write(score,font=Font)
+        if speed > 0:
+            speed += speed * -friction
+        elif speed < 0:
+            speed -= speed * friction
+        if speed > -0.2 and speed < 0.2:
+            speed=0
+        if turn > 0:
+            turn += turn * -friction
+        elif turn < 0:
+            turn -= turn *  friction
+        if turn > -0.7 and turn < 0.7:
+            turn=0
+        if player.xcor() < -345:
+            player.goto(345,player.ycor())
+        elif player.xcor() > 345:
+            player.goto(-345,player.ycor())
+        if player.ycor() < -345:
+            player.goto(player.xcor(),345)
+        elif player.ycor() > 345:
+            player.goto(player.xcor(),-345)
+            
+
+    while C != 1 :
+        asyncio.run(main())
+def menu():
+
+    def draw_button(x, y, width, height):
+        turtle.penup()
+        turtle.goto(x, y)
+        turtle.pendown()
+        turtle.begin_fill()
+        for _ in range(2):
+            turtle.forward(width)
+            turtle.right(90)
+            turtle.forward(height)
+            turtle.right(90)
+        turtle.penup()
+
+
+    def button_click(x, y):
+        global screen
+        if -200 <= x <= 200 and -175 <= y <= -75:
+            turtle.clear()
+            print('Exit')
+            quit()
+        elif -200 <= x <= 200 and -50 <= y <= 50:
+            turtle.clear()
+            print('Play')
+            Game()
+
+    def setup():
+        turtle.speed(0)
+        turtle.hideturtle()
+
+    def buttons():
+        draw_button(-200, 50, 400, 100)
+        turtle.goto(0, -20)
+        turtle.write('Play', font=("Helvetica Narrow", 20, "bold"), align='center')
+
+        draw_button(-200, -75, 400, 100)
+        turtle.goto(0, -140)
+        turtle.write('Exit', font=("Helvetica Narrow", 20, "bold"), align='center')
+        
+
+    setup()
+    buttons()
+    screen.onclick(button_click)
+    turtle.update()
+menu()
